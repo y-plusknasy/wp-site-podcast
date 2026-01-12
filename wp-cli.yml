@@ -1,0 +1,25 @@
+path: /var/www/html
+
+db check:
+  skip-ssl: true
+
+db export:
+  skip-ssl: true
+
+db import:
+  skip-ssl: true
+
+db query:
+  skip-ssl: true
+
+db shell:
+  skip-ssl: true
+
+db create:
+  skip-ssl: true
+
+db drop:
+  skip-ssl: true
+
+db reset:
+  skip-ssl: true

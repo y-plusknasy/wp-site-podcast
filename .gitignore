@@ -1,2 +1,35 @@
-html/
+# WordPress Core & Generated files
+html/*
+!html/wp-content/
+html/wp-content/*
+!html/wp-content/themes/
+!html/wp-content/plugins/
+!html/wp-content/mu-plugins/
+
+# Ignored wp-content data
+html/wp-content/uploads/
+html/wp-content/cache/
+html/wp-content/upgrade/
+html/wp-content/debug.log
+html/wp-content/advanced-cache.php
+html/wp-content/wp-cache-config.php
+
+# Backups and Archives
+*.sql
+*.tar.gz
+*.zip
+*.wpress
+html/wp-content/ai1wm-backups/
+
+# User specific files
+.vscode/
+
+# Database
 local_backup.sql
+
+# Environment
+.env
+
+# System
+.DS_Store
+Thumbs.db

@@ -1,0 +1,23 @@
+{
+	"name": "WordPress Dev",
+	"dockerComposeFile": [
+		"../compose.yml"
+	],
+	"service": "wordpress",
+	"workspaceFolder": "/workspace",
+	"features": {
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"bmewburn.vscode-intelephense-client",
+				"wordpresstoolbox.wordpress-toolbox",
+				"esbenp.prettier-vscode",
+				"dbaeumer.vscode-eslint",
+				"github.copilot"
+			]
+		}
+	},
+	"remoteUser": "www-data" 
+}

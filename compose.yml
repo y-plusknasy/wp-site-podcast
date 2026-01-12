@@ -1,0 +1,40 @@
+services:
+  db:
+    image: mariadb:10.5
+    restart: always
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./local_backup.sql:/docker-entrypoint-initdb.d/init.sql
+
+  wordpress:
+    build: .devcontainer
+    depends_on:
+      - db
+    ports:
+      - "8081:80"
+    volumes:
+      - ./html:/var/www/html
+      - ./wp-config-docker.php:/var/www/html/wp-config.php
+      - .:/workspace
+    env_file:
+      - .env
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: ${DB_USER}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${DB_NAME}
+    # Xserver環境との互換性のため、ホストUIDと合わせる必要がある場合があるが
+    # DevContainer利用時はDocker側でよしなに扱われることが多い。
+    # 必要に応じて user: "1000:1000" などを検討。
+
+volumes:
+  db_data:
