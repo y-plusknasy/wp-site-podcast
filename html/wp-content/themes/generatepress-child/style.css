@@ -1,0 +1,132 @@
+/*
+ Theme Name:   GeneratePress Child
+ Theme URI:    https://generatepress.com
+ Description:  Default GeneratePress child theme
+ Author:       Tom Usborne
+ Author URI:   https://tomusborne.com
+ Template:     generatepress
+ Version:      0.1
+*/
+
+/* 追加のカスタマイズCSSはここに記述 */
+/* PCレイアウト用の調整 */
+@media (min-width: 769px) {
+    /* サイト全体を管理するコンテナ */
+    .site-content {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px; /* メイン(可変) + 右サイドバー(固定300px) */
+        gap: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+        justify-content: center;
+    }
+
+    /* メインコンテンツエリア */
+    #primary {
+        width: 100%; /* GeneratePressのデフォルト幅を上書き */
+        max-width: 720px; /* カードリストの最大幅 */
+        margin-right: auto; /* 左寄せ気味にするため右マージン自動 */
+        margin-left: auto;  /* 一旦中央寄せ（微調整可能） */
+    }
+
+    /* デフォルトのサイドバーを非表示（独自の固定サイドバーを使うため） */
+    #right-sidebar {
+        display: none;
+    }
+
+    /* カスタム固定プレイヤーエリア */
+    .custom-fixed-sidebar {
+        position: sticky;
+        top: 20px; /* JSで上書きされるが初期値として持っておく */
+        height: fit-content;
+        width: 300px;
+        transition: top 0.3s ease-in-out; /* ヘッダーの動きに合わせて滑らかに動かす */
+    }
+
+    /* プレイヤー等の仮スタイル */
+    .sticky-player-placeholder {
+        background: #222;
+        color: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        min-height: 400px; /* 縦長プレイヤー想定 */
+        margin-bottom: 20px;
+    }
+
+    .ad-placeholder {
+        background: #e0e0e0;
+        height: 250px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+    }
+}
+
+/* カード型デザイン（全デバイス共通） */
+.generate-columns {
+    margin-bottom: 20px;
+    padding: 0;
+}
+
+.inside-article {
+    background: #fff;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+
+.inside-article:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* 再生ボタンのスタイル */
+.podcast-play-button-wrapper {
+    margin: 15px 0;
+}
+
+.podcast-play-button {
+    background-color: #1da1f2; /* SNSっぽい青 */
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.podcast-play-button:hover {
+    background-color: #0c85d0;
+}
+
+/* スマート（追従/隠れる）ヘッダー用スタイル */
+.site-header {
+    position: fixed; /* ヘッダーを固定 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000; /* 他の要素より上に */
+    transition: transform 0.3s ease-in-out;
+    background-color: #fff; /* 背景色がないと透けるため指定 */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 下スクロール時に隠す */
+.smart-header-hidden {
+    transform: translateY(-100%);
+}
+
+/* 上スクロール時に表示 */
+.smart-header-visible {
+    transform: translateY(0);
+}
