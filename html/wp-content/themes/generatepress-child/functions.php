@@ -34,17 +34,31 @@ function generatepress_child_add_fixed_sidebar() {
 
             <div class="player-main-controls">
                 <button id="player-btn-rewind" class="control-btn" aria-label="Rewind 15 seconds">-15s</button>
-                <button id="player-btn-play" class="control-btn play-btn" aria-label="Play/Pause">▶</button>
+                <button id="player-btn-play" class="control-btn play-btn" aria-label="Play/Pause">
+                    <!-- Play Icon SVG -->
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                </button>
                 <button id="player-btn-forward" class="control-btn" aria-label="Forward 30 seconds">+30s</button>
             </div>
 
             <div class="player-sub-controls">
                 <button id="player-btn-speed" class="sub-control-btn">1.0x</button>
                 <div class="volume-control">
-                    <span class="volume-icon">🔊</span>
+                    <span class="volume-icon" title="Mute/Unmute">
+                        <!-- Simple Speaker Icon (SVG) -->
+                        <svg viewBox="0 0 24 24">
+                            <path d="M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77zm-4 0h-2.5l-5 5v7.5h5l5 5v-17.5z"/> 
+                        </svg>
+                    </span>
                     <input type="range" id="player-volume-bar" value="100" max="100">
                 </div>
-                <a id="player-btn-download" href="#" class="sub-control-btn download-link" download style="display:none;">↓ DL</a>
+            </div>
+
+            <!-- Download Area -->
+            <div class="player-download-area">
+                <a id="player-btn-download" href="#" class="download-link disabled" download>
+                    <span class="icon">↓</span> Download Episode
+                </a>
             </div>
         </div>
         
@@ -65,6 +79,9 @@ function generatepress_child_enqueue_player_scripts() {
     
     // スマートヘッダーJS
     wp_enqueue_script( 'smart-header-js', get_stylesheet_directory_uri() . '/js/smart-header.js', array('jquery'), '1.0', true );
+
+    // テーマ切り替えJS
+    wp_enqueue_script( 'theme-switcher-js', get_stylesheet_directory_uri() . '/js/theme-switcher.js', array('jquery'), '1.0', true );
 
     // 無限スクロールJS (アーカイブ、ホーム画面のみ)
     if ( is_home() || is_archive() ) {
@@ -98,7 +115,7 @@ function generatepress_child_add_play_button() {
     ?>
     <div class="podcast-play-button-wrapper">
         <button class="podcast-play-button" data-src="<?php echo esc_url($audio_url); ?>" data-title="<?php the_title_attribute(); ?>">
-            ▶ Play Episode
+            <span class="icon-container">▶</span> <span class="text-container">Play Episode</span>
         </button>
     </div>
     <?php

@@ -95,19 +95,70 @@
     color: #fff;
     border: none;
     border-radius: 20px;
-    padding: 10px 20px;
+    padding: 0 20px; /* 横パディングのみ指定、高さはheightで固定 */
+    height: 40px; /* 高さを固定 */
+    min-width: 160px; /* 幅を固定（文字数変動対策） */
     font-size: 14px;
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s;
     display: inline-flex;
     align-items: center;
+    justify-content: center; /* 中央揃え */
     gap: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* ボタンにも少しシャドウ */
+}
+
+.podcast-play-button .text-container {
+    white-space: nowrap; /* 折り返し防止 */
+    display: inline-block;
+    min-width: 80px; /* テキストエリアの最小幅を確保 */
+    text-align: center;
 }
 
 .podcast-play-button:hover {
     background-color: #0c85d0;
 }
+
+/* === 記事内再生ボタンのアニメーション === */
+.podcast-play-button .icon-container {
+    display: inline-block;
+    width: 20px;
+    text-align: center;
+}
+
+/* Waveアニメーション (再生中) */
+.podcast-play-button.playing .icon-container {
+    height: 12px;
+    display: inline-flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 2px;
+}
+
+/* Wave用バーを作成するための疑似要素とspan生成はJSではなくHTML構造でやりたいが
+   既存HTMLを変えるのは手間なので、アイコンの中身だけ入れ替える方針に対応 */
+
+.wave-bar {
+    display: inline-block;
+    width: 3px;
+    background-color: #1da1f2; /* 通常時は青 */
+    animation: wave 1s infinite ease-in-out;
+}
+
+.podcast-play-button.playing .wave-bar {
+    background-color: #1da1f2; /* 反転時は青文字なので青バー */
+}
+
+@keyframes wave {
+    0%, 100% { height: 10%; }
+    50% { height: 100%; }
+}
+
+.wave-bar:nth-child(1) { animation-delay: 0s; }
+.wave-bar:nth-child(2) { animation-delay: 0.1s; }
+.wave-bar:nth-child(3) { animation-delay: 0.2s; }
+.wave-bar:nth-child(4) { animation-delay: 0.3s; }
 
 /* スマート（追従/隠れる）ヘッダー用スタイル */
 .site-header {
@@ -133,17 +184,18 @@
 
 /* プレイヤーのスタイル刷新 */
 .sticky-player-container {
-    background: #1e1e1e; /* ダークテーマ */
-    color: #fff;
+    background: #fff; /* ライトテーマ: 白背景 */
+    color: #333; /* テキスト色: ダークグレー */
     padding: 24px;
-    border-radius: 16px;
+    border-radius: 8px; /* カードのような角丸（GPのデフォルトに近づける） */
     margin-bottom: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); /* ドロップシャドウ */
+    border: 1px solid rgba(0,0,0,0.05); /* 微細な境界線 */
     text-align: center;
 }
 
 .player-track-info h3 {
-    color: #fff;
+    color: #333; /* タイトル色 */
     font-size: 16px;
     margin-bottom: 20px;
     line-height: 1.4;
@@ -157,13 +209,13 @@
     gap: 10px;
     margin-bottom: 20px;
     font-size: 12px;
-    color: #aaa;
+    color: #666; /* プログレス時間の文字色 */
 }
 
 #player-seek-bar {
     flex-grow: 1;
     cursor: pointer;
-    accent-color: #1da1f2; /* Webkit系ブラウザで青色に */
+    accent-color: #1da1f2;
 }
 
 .player-main-controls {
@@ -176,8 +228,8 @@
 
 .control-btn {
     background: transparent;
-    color: #fff;
-    border: 1px solid #555;
+    color: #999; /* デフォルトは少し薄く */
+    border: 1px solid #ddd;
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -191,8 +243,9 @@
 }
 
 .control-btn:hover {
-    background: rgba(255,255,255,0.1);
-    border-color: #777;
+    background: rgba(0,0,0,0.05);
+    border-color: #bbb;
+    color: #333; /* ホバー時にダークグレー */
 }
 
 .control-btn.play-btn {
@@ -201,11 +254,13 @@
     font-size: 24px;
     background: #1da1f2;
     border-color: #1da1f2;
-    padding-left: 4px; /* ▶アイコンの視覚調整 */
+    color: #fff; /* 再生ボタンは白文字固定 */
+    padding-left: 2px; /* アイコン位置微調整 */
 }
 
 .control-btn.play-btn:hover {
     background: #0c85d0;
+    color: #fff; /* ホバー時も白 */
 }
 
 .player-sub-controls {
@@ -213,23 +268,74 @@
     justify-content: space-between;
     align-items: center;
     font-size: 12px;
-    border-top: 1px solid #333;
+    border-top: 1px solid #eee; /* ディバイダー色 */
     padding-top: 16px;
 }
 
 .sub-control-btn {
-    background: transparent;
-    border: none;
-    color: #aaa;
+    background: transparent; /* 背景なし */
+    border: 1px solid transparent; /* 配置ずれ防止用 */
+    border-radius: 4px; /* 少し角丸 */
+    color: #888;
     cursor: pointer;
     font-size: 12px;
+    
+    /* サイズ固定・中央配置 */
+    width: 40px; 
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: all 0.2s;
 }
+
+/* スピードボタン専用ホバー設定 */
+#player-btn-speed:hover {
+    color: #1da1f2; /* テキスト色をライトブルーに */
+    background-color: rgba(29, 161, 242, 0.1); /* 背景も薄いブルーに */
+}
+
 .sub-control-btn:hover {
-    color: #fff;
+    color: #333;
+}
+
+/* Download Area */
+.player-download-area {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+    text-align: center;
 }
 
 .download-link {
     text-decoration: none;
+    font-size: 13px;
+    color: #1da1f2;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 4px;
+}
+
+.download-link:hover {
+    background-color: rgba(29, 161, 242, 0.05);
+    color: #0c85d0;
+}
+
+.download-link.disabled {
+    color: #ccc;
+    pointer-events: none; /* クリック無効化 */
+    cursor: default;
+    background-color: transparent;
+}
+.download-link.disabled .icon {
+    opacity: 0.5;
 }
 
 .volume-control {
@@ -238,9 +344,235 @@
     gap: 5px;
 }
 
+.volume-icon {
+    font-size: 16px; 
+    cursor: pointer;
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+    
+    /* 表示領域を拡大 */
+    width: 36px; 
+    height: 36px;
+    
+    color: #666;
+    transition: color 0.2s;
+}
+
+.volume-icon:hover {
+    color: #333;
+}
+
+.volume-icon svg {
+    /* SVGサイズ縮小 */
+    width: 16px; 
+    height: 16px;
+    fill: currentColor;
+    overflow: visible; /* 見切れ対策 */
+}
+
+.volume-icon.muted {
+    color: #aaa;
+    text-decoration: line-through; /* SVGがない場合のフォールバック */
+}
+
 #player-volume-bar {
     width: 60px;
     accent-color: #aaa;
 }
 
 /* モバイル調整はここでは不要（hide-on-mobileクラスで隠すため） */
+
+/* =================================================================
+   ダークテーマ設定 (JSクラス制御: body.is-dark-theme)
+   ================================================================= */
+    
+/* プレイヤーコンテナ */
+body.is-dark-theme .sticky-player-container {
+    background: #1e1e1e; /* ダークグレー背景 */
+    color: #e0e0e0; /* 文字色を白っぽく */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5); /* 影を濃く */
+    border-color: #333; /* 境界線を暗く */
+}
+
+/* タイトル */
+body.is-dark-theme .player-track-info h3 {
+    color: #fff;
+}
+
+/* プログレスバー（時間表示） */
+body.is-dark-theme .player-progress-container {
+    color: #aaa;
+}
+
+/* シークバーのアクセントカラー (オレンジ) */
+body.is-dark-theme #player-seek-bar {
+    accent-color: #ff6600;
+    background-color: #444;
+}
+
+/* 操作ボタン */
+body.is-dark-theme .control-btn {
+    color: #ccc;
+    border-color: #444;
+}
+
+body.is-dark-theme .control-btn:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: #666;
+    color: #fff; /* ホバー時は白 */
+}
+
+/* 再生ボタン (オレンジ背景) */
+body.is-dark-theme .control-btn.play-btn {
+    background: #ff6600;
+    border-color: #ff6600;
+    color: #fff;
+}
+
+body.is-dark-theme .control-btn.play-btn:hover {
+    background: #e65c00; /* 濃いオレンジ */
+    border-color: #e65c00;
+}
+
+/* ボーダーライン (分割線) */
+body.is-dark-theme .player-sub-controls,
+body.is-dark-theme .player-download-area {
+    border-top-color: #333;
+}
+
+/* サブコントロールボタン (速度など) */
+body.is-dark-theme .sub-control-btn {
+    color: #aaa;
+}
+body.is-dark-theme .sub-control-btn:hover {
+    color: #fff;
+}
+
+/* スピードボタンのホバー (オレンジ系) */
+body.is-dark-theme #player-btn-speed:hover {
+    color: #ff6600;
+    background-color: rgba(255, 102, 0, 0.15); /* 薄いオレンジ背景 */
+}
+
+/* ボリュームアイコン */
+body.is-dark-theme .volume-icon {
+    color: #aaa;
+}
+body.is-dark-theme .volume-icon:hover {
+    color: #fff;
+}
+
+/* ダウンロードリンク */
+body.is-dark-theme .download-link {
+    color: #ff6600;
+}
+
+body.is-dark-theme .download-link:hover {
+    background-color: rgba(255, 102, 0, 0.1);
+    color: #ff6600;
+}
+
+body.is-dark-theme .download-link.disabled {
+    color: #555;
+}
+
+/* ============================
+   記事内の再生ボタン (オレンジ化)
+   ============================ */
+body.is-dark-theme .podcast-play-button {
+    background-color: #ff6600;
+    color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+body.is-dark-theme .podcast-play-button:hover {
+    background-color: #e65c00;
+}
+
+/* Waveアニメーション (オレンジ背景時は白バー) */
+body.is-dark-theme .wave-bar,
+body.is-dark-theme .podcast-play-button.playing .wave-bar {
+    background-color: #fff;
+}
+
+/* ============================
+   ヘッダー・フッター (全体色変更)
+   ============================ */
+
+/* ヘッダー & ナビゲーション */
+body.is-dark-theme .site-header,
+body.is-dark-theme .main-navigation,
+body.is-dark-theme .main-navigation .main-nav ul ul {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+    border-bottom: 1px solid #333;
+}
+
+/* サイトタイトルやリンク */
+body.is-dark-theme .site-header a,
+body.is-dark-theme .main-navigation a,
+body.is-dark-theme .site-branding .main-title a {
+    color: #e0e0e0 !important;
+}
+
+body.is-dark-theme .main-navigation a:hover,
+body.is-dark-theme .site-header a:hover {
+    color: #ff6600 !important;
+}
+
+/* フッターエリア全体 */
+body.is-dark-theme .site-footer {
+    background-color: #1e1e1e !important;
+    color: #aaa !important;
+    border-top: 1px solid #333;
+}
+
+/* フッター最下部 (コピーライト) */
+body.is-dark-theme .site-info {
+    background-color: #121212 !important; 
+    color: #666 !important;
+}
+
+body.is-dark-theme .site-info a {
+    color: #aaa !important;
+}
+
+/* 記事カード */
+/* 詳細度を上げるため、親要素や!importantを追加 */
+body.is-dark-theme .separate-containers .inside-article,
+body.is-dark-theme .inside-article {
+    background-color: #1e1e1e !important;
+    border-color: #333 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    color: #e0e0e0;
+}
+
+/* リンク色も調整（青だと見にくい場合があるため） */
+body.is-dark-theme a, 
+body.is-dark-theme a:visited {
+    color: #ff9933; /* 明るめのオレンジ */
+}
+
+body.is-dark-theme .entry-title a,
+body.is-dark-theme .entry-title a:visited {
+    color: #fff;
+}
+
+body.is-dark-theme .entry-title a:hover {
+    color: #ddd;
+}
+
+body.is-dark-theme {
+   background-color: #121212;
+   color: #e0e0e0;
+}
+
+body.is-dark-theme h1, 
+body.is-dark-theme h2, 
+body.is-dark-theme h3, 
+body.is-dark-theme h4, 
+body.is-dark-theme h5, 
+body.is-dark-theme h6 {
+   color: #fff;
+}
