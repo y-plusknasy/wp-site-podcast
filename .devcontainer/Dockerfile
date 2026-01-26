@@ -19,6 +19,10 @@ RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli
     && chmod +x wp-cli.phar \
     && mv wp-cli.phar /usr/local/bin/wp
 
+# Install Composer 2.5.8 (matching remote environment)
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer --version=2.5.8 \
+    && chmod +x /usr/local/bin/composer
+
 # Configure PHP settings for development (optional but recommended)
 RUN echo "file_uploads = On\n" \
          "memory_limit = 512M\n" \
