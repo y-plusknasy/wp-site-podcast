@@ -5,6 +5,82 @@
  * Add your custom functions here.
  */
 
+// Composer autoload
+require_once __DIR__ . '/vendor/autoload.php';
+
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Storage;
+
+/**
+ * Firebase連携: Storage インスタンスを取得
+ */
+function get_firebase_storage() {
+    static $storage = null;
+    
+    if ($storage === null) {
+        $serviceAccountPath = __DIR__ . '/v-ism-plusknasy-firebase-credentials.json';
+        
+        if (!file_exists($serviceAccountPath)) {
+            error_log('Firebase credentials not found: ' . $serviceAccountPath);
+            return null;
+        }
+        
+        try {
+            $firebase = (new Factory)->withServiceAccount($serviceAccountPath);
+            $storage = $firebase->createStorage();
+        } catch (Exception $e) {
+            error_log('Firebase initialization failed: ' . $e->getMessage());
+            return null;
+        }
+    }
+    
+    return $storage;
+}
+
+/**
+ * Firebase Storage: 音声ファイルをアップロード
+ * 
+ * @param string $localFilePath ローカルファイルパス
+ * @param string $remoteFileName リモートファイル名
+ * @param string $lang 言語コード（'ja' または 'en'）
+ * @return string|false 公開URL または false
+ */
+function upload_audio_to_firebase($localFilePath, $remoteFileName, $lang = 'ja') {
+    $storage = get_firebase_storage();
+    
+    if (!$storage) {
+        return false;
+    }
+    
+    try {
+        $bucket = $storage->getBucket();
+        $remotePath = 'audio/' . $lang . '/' . $remoteFileName;
+        
+        // ファイルをアップロード
+        $bucket->upload(
+            fopen($localFilePath, 'r'),
+            [
+                'name' => $remotePath,
+                'predefinedAcl' => 'publicRead'
+            ]
+        );
+        
+        // 公開URLを生成
+        $object = $bucket->object($remotePath);
+        $publicUrl = sprintf(
+            'https://storage.googleapis.com/%s/%s',
+            $bucket->name(),
+            $remotePath
+        );
+        
+        return $publicUrl;
+        
+    } catch (Exception $e) {
+        error_log('Firebase upload failed: ' . $e->getMessage());
+        return false;
+    }
+}
+
 /**
  * Security: Disable XML-RPC
  * DDoS攻撃やブルートフォース攻撃の標的になりやすいため無効化します。
@@ -469,6 +545,181 @@ function generate_navigation_position() {
 	 */
 	do_action( 'generate_after_navigation' );
 }
+
+/**
+ * ==================================================
+ * Firebase Storage: カスタムフィールド UI
+ * ==================================================
+ */
+
+/**
+ * カスタムメタボックスを追加
+ */
+function add_podcast_audio_meta_box() {
+    add_meta_box(
+        'podcast_audio_files',
+        'Podcast Audio Files',
+        'render_podcast_audio_meta_box',
+        'post',
+        'normal',
+        'high'
+    );
+}
+add_action('add_meta_boxes', 'add_podcast_audio_meta_box');
+
+/**
+ * メタボックスの内容を表示
+ */
+function render_podcast_audio_meta_box($post) {
+    wp_nonce_field('podcast_audio_meta_box', 'podcast_audio_meta_box_nonce');
+    
+    $audio_url_jp = get_post_meta($post->ID, 'podcast_audio_url', true);
+    $audio_url_en = get_post_meta($post->ID, 'podcast_audio_url_en', true);
+    ?>
+    <div class="podcast-audio-upload-container">
+        <style>
+            .podcast-audio-field {
+                margin-bottom: 20px;
+                padding: 15px;
+                border: 1px solid #ddd;
+                background: #f9f9f9;
+            }
+            .podcast-audio-field label {
+                display: block;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            .podcast-audio-field input[type="file"] {
+                display: block;
+                margin-bottom: 10px;
+            }
+            .podcast-audio-current-url {
+                color: #0073aa;
+                font-size: 12px;
+                word-break: break-all;
+            }
+            .podcast-audio-status {
+                margin-top: 10px;
+                padding: 10px;
+                border-radius: 4px;
+            }
+            .status-success {
+                background: #d4edda;
+                color: #155724;
+            }
+            .status-error {
+                background: #f8d7da;
+                color: #721c24;
+            }
+        </style>
+
+        <div class="podcast-audio-field">
+            <label for="podcast_audio_file_jp">
+                🇯🇵 Japanese Audio (MP3)
+            </label>
+            <input type="file" 
+                   id="podcast_audio_file_jp" 
+                   name="podcast_audio_file_jp" 
+                   accept="audio/mpeg">
+            <?php if ($audio_url_jp): ?>
+                <div class="podcast-audio-current-url">
+                    Current: <?php echo esc_html($audio_url_jp); ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <div class="podcast-audio-field">
+            <label for="podcast_audio_file_en">
+                🇺🇸 English Audio (MP3)
+            </label>
+            <input type="file" 
+                   id="podcast_audio_file_en" 
+                   name="podcast_audio_file_en" 
+                   accept="audio/mpeg">
+            <?php if ($audio_url_en): ?>
+                <div class="podcast-audio-current-url">
+                    Current: <?php echo esc_html($audio_url_en); ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <p style="font-size: 12px; color: #666;">
+            <strong>Note:</strong> Uploaded files will be automatically transferred to Firebase Storage 
+            and the public URL will be saved.
+        </p>
+    </div>
+    <?php
+}
+
+/**
+ * 投稿保存時に音声ファイルをFirebaseにアップロード
+ */
+function save_podcast_audio_meta_box($post_id) {
+    // Nonce確認
+    if (!isset($_POST['podcast_audio_meta_box_nonce'])) {
+        return;
+    }
+    if (!wp_verify_nonce($_POST['podcast_audio_meta_box_nonce'], 'podcast_audio_meta_box')) {
+        return;
+    }
+    
+    // 自動保存の場合はスキップ
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    
+    // 権限確認
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+    
+    // 日本語音声の処理
+    if (isset($_FILES['podcast_audio_file_jp']) && $_FILES['podcast_audio_file_jp']['error'] === UPLOAD_ERR_OK) {
+        $result = process_audio_upload($_FILES['podcast_audio_file_jp'], $post_id, 'jp');
+        if ($result) {
+            update_post_meta($post_id, 'podcast_audio_url', $result);
+        }
+    }
+    
+    // 英語音声の処理
+    if (isset($_FILES['podcast_audio_file_en']) && $_FILES['podcast_audio_file_en']['error'] === UPLOAD_ERR_OK) {
+        $result = process_audio_upload($_FILES['podcast_audio_file_en'], $post_id, 'en');
+        if ($result) {
+            update_post_meta($post_id, 'podcast_audio_url_en', $result);
+        }
+    }
+}
+add_action('save_post', 'save_podcast_audio_meta_box');
+
+/**
+ * 音声ファイルのアップロード処理
+ */
+function process_audio_upload($file, $post_id, $lang) {
+    // ファイルタイプ確認
+    $allowed_types = ['audio/mpeg', 'audio/mp3'];
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime_type = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+    
+    if (!in_array($mime_type, $allowed_types)) {
+        return false;
+    }
+    
+    // ファイルサイズ確認（100MB）
+    if ($file['size'] > 100 * 1024 * 1024) {
+        return false;
+    }
+    
+    // ファイル名生成
+    $timestamp = time();
+    $remote_filename = sprintf('post-%d-%d.mp3', $post_id, $timestamp);
+    
+    // Firebaseにアップロード
+    $public_url = upload_audio_to_firebase($file['tmp_name'], $remote_filename, $lang);
+    
+    return $public_url;
+}
+
 
 
 

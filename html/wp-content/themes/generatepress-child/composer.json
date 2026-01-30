@@ -1,0 +1,21 @@
+{
+    "name": "generatepress-child/firebase-integration",
+    "description": "Firebase Storage integration for podcast audio files",
+    "type": "wordpress-theme",
+    "require": {
+        "kreait/firebase-php": "^7.0"
+    },
+    "config": {
+        "platform": {
+            "php": "8.3"
+        },
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    },
+    "autoload": {
+        "files": [
+            "vendor/autoload.php"
+        ]
+    }
+}

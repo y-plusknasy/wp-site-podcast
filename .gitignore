@@ -20,6 +20,7 @@ html/wp-content/wp-cache-config.php
 *.zip
 *.wpress
 html/wp-content/ai1wm-backups/
+mp3/*
 
 # User specific files
 .vscode/
@@ -29,6 +30,10 @@ local_backup.sql
 
 # Environment
 .env
+
+# Firebase credentials and dependencies
+html/wp-content/themes/generatepress-child/v-ism-plusknasy-firebase-credentials.json
+html/wp-content/themes/generatepress-child/vendor/
 
 # System
 .DS_Store

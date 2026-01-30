@@ -1,4 +1,4 @@
-# WPSite Podcast - 開発環境ドキュメント
+# V-ism +knasy - 開発環境ドキュメント
 
 ## 1. 開発環境の概要
 
@@ -16,8 +16,8 @@
 
 1.  **リポジトリのクローン**:
     ```bash
-    git clone https://github.com/y-plusknasy/wp-site-podcast.git
-    cd wp-site-podcast
+    git clone https://github.com/y-plusknasy/v-ism-plusknasy.git
+    cd v-ism-plusknasy
     ```
 2.  **VS Code で開く**:
     ```bash
@@ -127,7 +127,7 @@ WordPress管理画面から音声ファイルをアップロードすると、�
 #### A. Firebase プロジェクトの作成
 1. [Firebase Console](https://console.firebase.google.com/) にアクセス
 2. 「プロジェクトを追加」をクリック
-3. プロジェクト名を入力（例: `wp-podcast-project`）
+3. プロジェクト名を入力（例: `v-ism-plusknasy`）
 4. Google Analytics は任意（推奨: 無効）
 5. プロジェクト作成完了
 
@@ -365,7 +365,7 @@ chmod 755 vendor/
 
 **Firebase 連携後の構造**:
 ```
-wp-site-podcast/
+v-ism-plusknasy/
 ├── firebase.json              # Firebase 設定ファイル
 ├── storage.rules              # Storage セキュリティルール
 ├── html/

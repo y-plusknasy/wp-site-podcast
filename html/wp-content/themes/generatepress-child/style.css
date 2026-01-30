@@ -813,6 +813,11 @@ body.is-dark-theme .sns-link.facebook:hover { color: #4298f5; }
     .mobile-ad-slot {
         display: none;
     }
+    
+    /* Hide Mobile Player on Desktop */
+    .mobile-sticky-player {
+        display: none !important;
+    }
 }
 
 /* Margin/Padding Adjustments for Mobile */
