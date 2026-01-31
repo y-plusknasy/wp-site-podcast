@@ -130,6 +130,61 @@ function get_next_audio_version($post_id, $lang) {
 2. 「新しい秘密鍵の生成」をクリック
 3. ダウンロードしたJSONファイルを `firebase-credentials.json` にリネーム
 
+#### 4. CORS設定（ダウンロード機能用）
+
+Firebase Storageからのクロスオリジンダウンロードを許可するため、CORS設定が必要です。
+
+**方法1: Google Cloud SDK使用（推奨）**
+
+```bash
+# 1. Google Cloud SDK認証（初回のみ）
+gcloud auth login --no-launch-browser
+
+# 2. プロジェクト設定
+gcloud config set project v-ism-plusknasy
+
+# 3. CORS設定適用
+gsutil cors set cors.json gs://v-ism-plusknasy.firebasestorage.app
+
+# 4. 設定確認
+gsutil cors get gs://v-ism-plusknasy.firebasestorage.app
+```
+
+`cors.json` の内容:
+```json
+[
+  {
+    "origin": ["*"],
+    "method": ["GET", "HEAD"],
+    "responseHeader": ["Content-Type", "Content-Length"],
+    "maxAgeSeconds": 3600
+  }
+]
+```
+
+**方法2: Google Cloud Console使用**
+
+1. [Google Cloud Console](https://console.cloud.google.com/) にアクセス
+2. プロジェクトを選択
+3. 「Cloud Storage」→「ブラウザ」
+4. バケット `v-ism-plusknasy.firebasestorage.app` を選択
+5. 「権限」タブ→「CORS」セクションで設定
+
+**CORS設定後の確認**:
+
+```bash
+# ホストマシンからCORSヘッダーを確認
+curl -I -H "Origin: http://localhost:8081" \
+  https://storage.googleapis.com/v-ism-plusknasy.firebasestorage.app/audio/post-1/ja-v1-xxx.mp3
+```
+
+`access-control-allow-origin: *` が表示されれば成功です。
+
+**トラブルシューティング**:
+- ブラウザキャッシュ: 開発者ツールで「Disable cache」を有効化してテスト
+- CDN伝播: 設定後5-15分待つ必要がある場合があります
+- シークレットモード: 新しいシークレットウィンドウでテスト
+
 ### Phase 2: ローカル環境セットアップ
 
 #### 1. Composer 初期化

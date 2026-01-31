@@ -33,7 +33,12 @@ jQuery(document).ready(function($) {
             audio.load();
             $trackTitle.text(title);
             if ($downloadBtn.length) {
-                $downloadBtn.attr('href', src).removeClass('disabled');
+                const lang = $japaneseBtn.data('lang') || 'ja';
+                const downloadFilename = title.replace(/[\\/:*?"<>|]/g, '_') + '_' + lang + '.mp3';
+                $downloadBtn.attr({
+                    'href': src,
+                    'download': downloadFilename
+                }).removeClass('disabled');
             }
             $currentArticleBtn = $japaneseBtn;
         }
@@ -47,6 +52,37 @@ jQuery(document).ready(function($) {
         const m = Math.floor(seconds / 60);
         const s = Math.floor(seconds % 60);
         return m + ":" + (s < 10 ? "0" : "") + s;
+    }
+    
+    // URLからファイル名を抽出
+    function getFilenameFromUrl(url) {
+        if (!url) return 'audio.mp3';
+        const parts = url.split('/');
+        return parts[parts.length - 1] || 'audio.mp3';
+    }
+    
+    // Fetch APIを使用してクロスオリジンファイルをダウンロード
+    function downloadAudioFile(url, filename) {
+        fetch(url)
+            .then(response => {
+                if (!response.ok) throw new Error('Download failed');
+                return response.blob();
+            })
+            .then(blob => {
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(blobUrl);
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                console.error('Download failed:', error);
+                alert('ダウンロードに失敗しました。再度お試しください。');
+            });
     }
 
     // SVG定義（モバイル用は28px、PC用は24px）
@@ -132,7 +168,12 @@ jQuery(document).ready(function($) {
                 $trackTitle.text(title);
                 // ダウンロードボタンの更新
                 if ($downloadBtn.length) {
-                    $downloadBtn.attr('href', src).removeClass('disabled');
+                    const lang = $btn.data('lang') || 'audio';
+                    const downloadFilename = title.replace(/[\\/:*?"<>|]/g, '_') + '_' + lang + '.mp3';
+                    $downloadBtn.attr({
+                        'href': src,
+                        'download': downloadFilename
+                    }).removeClass('disabled');
                 }
             }
             
@@ -154,7 +195,12 @@ jQuery(document).ready(function($) {
                 audio.load();
                 $trackTitle.text(title);
                 if ($downloadBtn.length) {
-                    $downloadBtn.attr('href', src).removeClass('disabled');
+                    const lang = $japaneseBtn.data('lang') || 'ja';
+                    const downloadFilename = title.replace(/[\\/:*?"<>|]/g, '_') + '_' + lang + '.mp3';
+                    $downloadBtn.attr({
+                        'href': src,
+                        'download': downloadFilename
+                    }).removeClass('disabled');
                 }
                 $currentArticleBtn = $japaneseBtn;
             } else {
@@ -227,6 +273,17 @@ jQuery(document).ready(function($) {
         const seekTo = audio.duration * ($(this).val() / 100);
         audio.currentTime = seekTo;
         $currentTime.text(formatTime(seekTo));
+    });
+    
+    // 7. ダウンロードボタンクリック
+    $downloadBtn.on('click', function(e) {
+        e.preventDefault();
+        const url = $(this).attr('href');
+        const filename = $(this).attr('download');
+        
+        if (url && url !== '#' && !$(this).hasClass('disabled')) {
+            downloadAudioFile(url, filename);
+        }
     });
 
     // --- Audio オブジェクトのイベント ---

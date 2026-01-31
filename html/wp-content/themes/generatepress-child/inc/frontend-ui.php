@@ -132,12 +132,13 @@ function generatepress_child_add_play_button() {
     $url_en = get_post_meta( get_the_ID(), 'podcast_audio_url_en', true );
 
     // ヘルパー関数: ボタン出力
-    $render_button = function($url, $label) {
+    $render_button = function($url, $label, $lang) {
         if ( $url ) {
             ?>
             <button class="podcast-play-button" 
                     data-src="<?php echo esc_url($url); ?>" 
                     data-title="<?php the_title_attribute(); ?>"
+                    data-lang="<?php echo esc_attr($lang); ?>"
                     data-original-text="<?php echo esc_attr($label); ?>">
                 <span class="icon-container">▶</span> 
                 <span class="text-container"><?php echo esc_html($label); ?></span>
@@ -155,8 +156,8 @@ function generatepress_child_add_play_button() {
     ?>
     <div class="podcast-play-button-wrapper">
         <?php 
-        $render_button($url_jp, 'Ep. in Japanese');
-        $render_button($url_en, 'Ep. in English');
+        $render_button($url_jp, 'Ep. in Japanese', 'ja');
+        $render_button($url_en, 'Ep. in English', 'en');
         ?>
     </div>
     <?php

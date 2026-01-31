@@ -138,6 +138,27 @@ firebase deploy
 firebase emulators:start --only storage
 ```
 
+### Google Cloud SDK (gsutil) 関連
+```bash
+# 認証（初回のみ）
+gcloud auth login --no-launch-browser
+
+# プロジェクト設定
+gcloud config set project v-ism-plusknasy
+
+# CORS設定の適用
+gsutil cors set cors.json gs://v-ism-plusknasy.firebasestorage.app
+
+# CORS設定の確認
+gsutil cors get gs://v-ism-plusknasy.firebasestorage.app
+
+# バケット内のファイル一覧
+gsutil ls gs://v-ism-plusknasy.firebasestorage.app/audio/
+
+# 特定ファイルの詳細情報
+gsutil stat gs://v-ism-plusknasy.firebasestorage.app/audio/post-1/ja-v1-xxx.mp3
+```
+
 ### Composer 関連
 ```bash
 # 依存関係のインストール
